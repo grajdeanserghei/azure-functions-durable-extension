@@ -1218,11 +1218,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 EventGridPublishRetryHttpStatus = retryStatus,
             };
 
+            IOptions<DurableTaskOptions> wrappedOptions = new OptionsWrapper<DurableTaskOptions>(options);
+            var connectionStringResolver = new TestConnectionStringResolver();
             var extension = new DurableTaskExtension(
-                new OptionsWrapper<DurableTaskOptions>(options),
+                wrappedOptions,
                 new LoggerFactory(),
                 mockNameResolver.Object,
-                new TestConnectionStringResolver());
+                new OrchestrationServiceFactory(wrappedOptions, connectionStringResolver));
 
             var eventGridLifeCycleNotification = (EventGridLifeCycleNotificationHelper)extension.LifeCycleNotificationHelper;
 
@@ -1247,11 +1249,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 CustomLifeCycleNotificationHelperType = typeof(TestLifeCycleNotificationHelper).AssemblyQualifiedName,
             };
 
+            IOptions<DurableTaskOptions> wrappedOptions = new OptionsWrapper<DurableTaskOptions>(options);
+            var connectionStringResolver = new TestConnectionStringResolver();
             var extension = new DurableTaskExtension(
-                new OptionsWrapper<DurableTaskOptions>(options),
+                wrappedOptions,
                 new LoggerFactory(),
                 new SimpleNameResolver(),
-                new TestConnectionStringResolver());
+                new OrchestrationServiceFactory(wrappedOptions, connectionStringResolver));
 
             var lifeCycleNotificationHelper = extension.LifeCycleNotificationHelper;
 
@@ -1268,11 +1272,12 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 CustomLifeCycleNotificationHelperType = "Test.TestLifeCycleNotificationHelper",
             };
 
+            var wrappedOptions = new OptionsWrapper<DurableTaskOptions>(options);
             var extension = new DurableTaskExtension(
-                new OptionsWrapper<DurableTaskOptions>(options),
+                wrappedOptions,
                 new LoggerFactory(),
                 new SimpleNameResolver(),
-                new TestConnectionStringResolver());
+                new OrchestrationServiceFactory(wrappedOptions, new TestConnectionStringResolver()));
 
             var lifeCycleNotificationHelper = extension.LifeCycleNotificationHelper;
 
@@ -1291,11 +1296,12 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 CustomLifeCycleNotificationHelperType = null,
             };
 
+            var wrappedOptions = new OptionsWrapper<DurableTaskOptions>(options);
             var extension = new DurableTaskExtension(
-                new OptionsWrapper<DurableTaskOptions>(options),
+                wrappedOptions,
                 new LoggerFactory(),
                 new SimpleNameResolver(),
-                new TestConnectionStringResolver());
+                new OrchestrationServiceFactory(wrappedOptions, new TestConnectionStringResolver()));
 
             var lifeCycleNotificationHelper = extension.LifeCycleNotificationHelper;
 

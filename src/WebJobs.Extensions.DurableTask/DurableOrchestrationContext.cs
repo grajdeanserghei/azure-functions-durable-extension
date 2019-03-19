@@ -63,7 +63,7 @@ namespace Microsoft.Azure.WebJobs
 
         internal ExceptionDispatchInfo OrchestrationException { get; set; }
 
-        internal string HubName => this.config.Options.HubName;
+        internal string HubName => this.config.Options.GetTaskHubName();
 
         internal string Name => this.orchestrationName;
 
@@ -248,7 +248,7 @@ namespace Microsoft.Azure.WebJobs
             Task<T> timerTask = this.innerContext.CreateTimer(fireAt, state, cancelToken);
 
             this.config.TraceHelper.FunctionListening(
-                this.config.Options.HubName,
+                this.config.Options.GetTaskHubName(),
                 this.orchestrationName,
                 this.InstanceId,
                 reason: $"CreateTimer:{fireAt:o}",
@@ -257,7 +257,7 @@ namespace Microsoft.Azure.WebJobs
             T result = await timerTask;
 
             this.config.TraceHelper.TimerExpired(
-                this.config.Options.HubName,
+                this.config.Options.GetTaskHubName(),
                 this.orchestrationName,
                 this.InstanceId,
                 expirationTime: fireAt,
@@ -316,7 +316,7 @@ namespace Microsoft.Azure.WebJobs
                 else
                 {
                     this.config.TraceHelper.FunctionListening(
-                        this.config.Options.HubName,
+                        this.config.Options.GetTaskHubName(),
                         this.orchestrationName,
                         this.InstanceId,
                         reason: $"WaitForExternalEvent:{name}",
@@ -450,7 +450,7 @@ namespace Microsoft.Azure.WebJobs
             string sourceFunctionId = this.orchestrationName;
 
             this.config.TraceHelper.FunctionScheduled(
-                this.config.Options.HubName,
+                this.config.Options.GetTaskHubName(),
                 functionName,
                 this.InstanceId,
                 reason: sourceFunctionId,
@@ -496,7 +496,7 @@ namespace Microsoft.Azure.WebJobs
                     // If this were not a replay, then the activity function trigger would have already
                     // emitted a FunctionFailed trace with the full exception details.
                     this.config.TraceHelper.FunctionFailed(
-                        this.config.Options.HubName,
+                        this.config.Options.GetTaskHubName(),
                         functionName,
                         this.InstanceId,
                         reason: $"(replayed {exception.GetType().Name})",
@@ -510,7 +510,7 @@ namespace Microsoft.Azure.WebJobs
                 // If this were not a replay, then the activity function trigger would have already
                 // emitted a FunctionCompleted trace with the actual output details.
                 this.config.TraceHelper.FunctionCompleted(
-                    this.config.Options.HubName,
+                    this.config.Options.GetTaskHubName(),
                     functionName,
                     this.InstanceId,
                     output: "(replayed)",

@@ -41,7 +41,7 @@ namespace Microsoft.Azure.WebJobs
 
             this.client = new TaskHubClient(serviceClient);
             this.traceHelper = config.TraceHelper;
-            this.hubName = attribute.TaskHub ?? config.Options.HubName;
+            this.hubName = attribute.TaskHub ?? config.Options.GetTaskHubName();
             this.attribute = attribute;
         }
 
@@ -181,7 +181,11 @@ namespace Microsoft.Azure.WebJobs
                 throw new InvalidOperationException("The rewind operation is only supported on failed orchestration instances.");
             }
 
-            var service = (AzureStorageOrchestrationService)this.client.ServiceClient;
+            var service = this.client.ServiceClient as AzureStorageOrchestrationService;
+            if (service == null)
+            {
+                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+            }
             await service.RewindTaskOrchestrationAsync(instanceId, reason);
 
             this.traceHelper.FunctionRewound(this.hubName, state.Name, instanceId, reason);
@@ -190,9 +194,15 @@ namespace Microsoft.Azure.WebJobs
         /// <inheritdoc />
         public override async Task<DurableOrchestrationStatus> GetStatusAsync(string instanceId, bool showHistory = false, bool showHistoryOutput = false, bool showInput = true)
         {
-            // TODO this cast is to avoid to change DurableTask.Core. Change it to use TaskHubClient.
-            var storageService = (AzureStorageOrchestrationService)this.client.ServiceClient;
-            IList<OrchestrationState> stateList = await storageService.GetOrchestrationStateAsync(instanceId, allExecutions: false, fetchInput: showInput);
+            // TODO this cast is to avoid to adding methods to the core IOrchestrationService/Client interface in DurableTask.Core. Eventually we will need
+            // a better way of handling this
+            var serviceClient = this.client.ServiceClient as AzureStorageOrchestrationService;
+            if (serviceClient == null)
+            {
+                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+            }
+
+            IList<OrchestrationState> stateList = await serviceClient.GetOrchestrationStateAsync(instanceId, allExecutions: false, fetchInput: showInput);
 
             OrchestrationState state = stateList?.FirstOrDefault();
             if (state == null || state.OrchestrationInstance == null)
@@ -206,8 +216,14 @@ namespace Microsoft.Azure.WebJobs
         /// <inheritdoc />
         public override async Task<IList<DurableOrchestrationStatus>> GetStatusAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            // TODO this cast is to avoid to change DurableTask.Core. Change it to use TaskHubClient.
-            AzureStorageOrchestrationService serviceClient = (AzureStorageOrchestrationService)this.client.ServiceClient;
+            // TODO this cast is to avoid to adding methods to the core IOrchestrationService/Client interface in DurableTask.Core. Eventually we will need
+            // a better way of handling this
+            var serviceClient = this.client.ServiceClient as AzureStorageOrchestrationService;
+            if (serviceClient == null)
+            {
+                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+            }
+
             IList<OrchestrationState> states = await serviceClient.GetOrchestrationStateAsync(cancellationToken);
 
             var results = new List<DurableOrchestrationStatus>();
@@ -222,8 +238,14 @@ namespace Microsoft.Azure.WebJobs
         /// <inheritdoc />
         public override async Task<IList<DurableOrchestrationStatus>> GetStatusAsync(DateTime createdTimeFrom, DateTime? createdTimeTo, IEnumerable<OrchestrationRuntimeStatus> runtimeStatus, CancellationToken cancellationToken = default(CancellationToken))
         {
-            // TODO this cast is to avoid to change DurableTask.Core. Change it to use TaskHubClient.
-            AzureStorageOrchestrationService serviceClient = (AzureStorageOrchestrationService)this.client.ServiceClient;
+            // TODO this cast is to avoid to adding methods to the core IOrchestrationService/Client interface in DurableTask.Core. Eventually we will need
+            // a better way of handling this
+            var serviceClient = this.client.ServiceClient as AzureStorageOrchestrationService;
+            if (serviceClient == null)
+            {
+                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+            }
+
             IList<OrchestrationState> states = await serviceClient.GetOrchestrationStateAsync(createdTimeFrom, createdTimeTo, runtimeStatus.Select(x => (OrchestrationStatus)x), cancellationToken);
             var results = new List<DurableOrchestrationStatus>();
             foreach (OrchestrationState state in states)
@@ -237,8 +259,14 @@ namespace Microsoft.Azure.WebJobs
         /// <inheritdoc />
         public override async Task<PurgeHistoryResult> PurgeInstanceHistoryAsync(string instanceId)
         {
-            // TODO this cast is to avoid to change DurableTask.Core. Change it to use TaskHubClient.
-            AzureStorageOrchestrationService serviceClient = (AzureStorageOrchestrationService)this.client.ServiceClient;
+            // TODO this cast is to avoid to adding methods to the core IOrchestrationService/Client interface in DurableTask.Core. Eventually we will need
+            // a better way of handling this
+            var serviceClient = this.client.ServiceClient as AzureStorageOrchestrationService;
+            if (serviceClient == null)
+            {
+                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+            }
+
             DurableTask.AzureStorage.PurgeHistoryResult purgeHistoryResult =
                 await serviceClient.PurgeInstanceHistoryAsync(instanceId);
             return new PurgeHistoryResult(purgeHistoryResult.InstancesDeleted);
@@ -247,8 +275,14 @@ namespace Microsoft.Azure.WebJobs
         /// <inheritdoc />
         public override async Task<PurgeHistoryResult> PurgeInstanceHistoryAsync(DateTime createdTimeFrom, DateTime? createdTimeTo, IEnumerable<OrchestrationStatus> runtimeStatus)
         {
-            // TODO this cast is to avoid to change DurableTask.Core. Change it to use TaskHubClient.
-            AzureStorageOrchestrationService serviceClient = (AzureStorageOrchestrationService)this.client.ServiceClient;
+            // TODO this cast is to avoid to adding methods to the core IOrchestrationService/Client interface in DurableTask.Core. Eventually we will need
+            // a better way of handling this
+            var serviceClient = this.client.ServiceClient as AzureStorageOrchestrationService;
+            if (serviceClient == null)
+            {
+                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+            }
+
             DurableTask.AzureStorage.PurgeHistoryResult purgeHistoryResult =
                 await serviceClient.PurgeInstanceHistoryAsync(createdTimeFrom, createdTimeTo, runtimeStatus);
             return new PurgeHistoryResult(purgeHistoryResult.InstancesDeleted);
@@ -263,7 +297,14 @@ namespace Microsoft.Azure.WebJobs
             string continuationToken,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            var serviceClient = (AzureStorageOrchestrationService)this.client.ServiceClient;
+            // TODO this cast is to avoid to adding methods to the core IOrchestrationService/Client interface in DurableTask.Core. Eventually we will need
+            // a better way of handling this
+            var serviceClient = this.client.ServiceClient as AzureStorageOrchestrationService;
+            if (serviceClient == null)
+            {
+                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+            }
+
             var statusContext = await serviceClient.GetOrchestrationStateAsync(createdTimeFrom, createdTimeTo, runtimeStatus.Select(x => (OrchestrationStatus)x), pageSize, continuationToken, cancellationToken);
 
             var results = new List<DurableOrchestrationStatus>();

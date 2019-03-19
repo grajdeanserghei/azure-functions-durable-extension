@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using DurableTask.AzureStorage;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
 using Microsoft.Azure.WebJobs.Host.TestCommon;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -37,7 +38,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         {
             var durableTaskOptions = new DurableTaskOptions
             {
-                HubName = GetTaskHubNameFromTestName(testName, enableExtendedSessions),
+                StorageProvider = new StorageProviderOptions
+                {
+                    AzureStorage = new AzureStorageOptions
+                    {
+                        HubName = GetTaskHubNameFromTestName(testName, enableExtendedSessions),
+                    },
+                },
                 TraceInputsAndOutputs = true,
                 EventGridKeySettingName = eventGridKeySettingName,
                 EventGridTopicEndpoint = eventGridTopicEndpoint,
@@ -67,7 +74,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
             if (maxQueuePollingInterval != null)
             {
-                durableTaskOptions.MaxQueuePollingInterval = maxQueuePollingInterval.Value;
+                durableTaskOptions.StorageProvider.AzureStorage.MaxQueuePollingInterval = maxQueuePollingInterval.Value;
             }
 
             var optionsWrapper = new OptionsWrapper<DurableTaskOptions>(durableTaskOptions);

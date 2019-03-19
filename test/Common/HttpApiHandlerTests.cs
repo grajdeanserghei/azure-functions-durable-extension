@@ -839,7 +839,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                     new OptionsWrapper<DurableTaskOptions>(options),
                     new LoggerFactory(),
                     TestHelpers.GetTestNameResolver(),
-                    new TestConnectionStringResolver())
+                    new OrchestrationServiceFactory(new OptionsWrapper<DurableTaskOptions>(options), new TestConnectionStringResolver()))
             {
             }
 

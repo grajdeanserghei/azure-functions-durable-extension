@@ -117,11 +117,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         private static DurableTaskExtension GetDurableTaskExtension()
         {
+            IOptions<DurableTaskOptions> wrappedOptions = new OptionsWrapper<DurableTaskOptions>(new DurableTaskOptions());
+            var connectionStringResolver = new TestConnectionStringResolver();
             return new DurableTaskExtension(
-                new OptionsWrapper<DurableTaskOptions>(new DurableTaskOptions()),
+                wrappedOptions,
                 new LoggerFactory(),
                 TestHelpers.GetTestNameResolver(),
-                new TestConnectionStringResolver());
+                new OrchestrationServiceFactory(wrappedOptions, connectionStringResolver));
         }
     }
 }
