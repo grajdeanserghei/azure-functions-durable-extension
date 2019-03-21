@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.TestCommon;
 using Microsoft.Extensions.Logging;
@@ -25,12 +26,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             this.loggerProvider = new TestLoggerProvider(output);
         }
 
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
         [Trait("Category", PlatformSpecificHelpers.TestCategory + "_BVT")]
-        public async Task ActivityTriggerAsJObject()
+        [InlineData(TestHelpers.AzureStorageProviderType)]
+        [InlineData(TestHelpers.EmulatorProviderType)]
+        public async Task ActivityTriggerAsJObject(string storageProviderType)
         {
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.ActivityTriggerAsJObject), false))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.ActivityTriggerAsJObject), false, storageProviderType))
             {
                 await host.StartAsync();
 
@@ -52,11 +55,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             }
         }
 
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task ActivityTriggerAsPOCO()
+        [InlineData(TestHelpers.AzureStorageProviderType)]
+        [InlineData(TestHelpers.EmulatorProviderType)]
+        public async Task ActivityTriggerAsPOCO(string storageProviderType)
         {
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.ActivityTriggerAsPOCO), false))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.ActivityTriggerAsPOCO), false, storageProviderType))
             {
                 await host.StartAsync();
 
@@ -79,11 +84,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             }
         }
 
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task ActivityTriggerAsNumber()
+        [InlineData(TestHelpers.AzureStorageProviderType)]
+        [InlineData(TestHelpers.EmulatorProviderType)]
+        public async Task ActivityTriggerAsNumber(string storageProviderType)
         {
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.ActivityTriggerAsNumber), false))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.ActivityTriggerAsNumber), false, storageProviderType))
             {
                 await host.StartAsync();
 
@@ -104,11 +111,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             }
         }
 
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task BindToBlobViaParameterName()
+        [InlineData(TestHelpers.AzureStorageProviderType)]
+        [InlineData(TestHelpers.EmulatorProviderType)]
+        public async Task BindToBlobViaParameterName(string storageProviderType)
         {
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.BindToBlobViaParameterName), false))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.BindToBlobViaParameterName), false, storageProviderType))
             {
                 await host.StartAsync();
 
@@ -155,11 +164,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             }
         }
 
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task BindToBlobViaPOCO()
+        [InlineData(TestHelpers.AzureStorageProviderType)]
+        [InlineData(TestHelpers.EmulatorProviderType)]
+        public async Task BindToBlobViaPOCO(string storageProviderType)
         {
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.BindToBlobViaPOCO), false))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.BindToBlobViaPOCO), false, storageProviderType))
             {
                 await host.StartAsync();
 

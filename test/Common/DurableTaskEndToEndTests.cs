@@ -86,9 +86,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task HelloWorldOrchestration_Inline(bool extendedSessions)
+        [InlineData(true, TestHelpers.AzureStorageProviderType)]
+        [InlineData(false, TestHelpers.AzureStorageProviderType)]
+        [InlineData(true, TestHelpers.EmulatorProviderType)]
+        [InlineData(false, TestHelpers.EmulatorProviderType)]
+        public async Task HelloWorldOrchestration_Inline(bool extendedSessions, string storageProviderType)
         {
             string[] orchestratorFunctionNames =
             {
@@ -98,7 +100,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (var host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.HelloWorldOrchestration_Inline),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProviderType))
             {
                 await host.StartAsync();
 

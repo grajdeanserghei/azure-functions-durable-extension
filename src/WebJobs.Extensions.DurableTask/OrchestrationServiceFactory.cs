@@ -4,9 +4,7 @@ using System.Text;
 using DurableTask.AzureStorage;
 using DurableTask.Core;
 using DurableTask.Core.Tracking;
-using DurableTask.ServiceBus;
-using DurableTask.ServiceBus.Settings;
-using DurableTask.ServiceBus.Tracking;
+using DurableTask.Emulator;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
 using Microsoft.Extensions.Options;
 
@@ -26,8 +24,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
                 case AzureStorageOptions azureStorageOptions:
                     this.innerFactory = new AzureStorageOrchestrationServiceFactory(options.Value, connectionStringResolver);
                     break;
-                case ServiceBusOptions serviceBusOptions:
-                    this.innerFactory = new ServiceBusOrchestrationServiceFactory(options.Value, connectionStringResolver);
+                case EmulatorStorageOptions emulatorStorageOptions:
+                    this.innerFactory = new EmulaterOrchestrationServiceFactory(options.Value);
                     break;
                 default:
                     throw new InvalidOperationException($"{configuredProvider.GetType()} is not a supported storage provider.");
@@ -76,7 +74,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
             {
                 this.options = options;
                 this.connectionStringResolver = connectionStringResolver;
-                this.defaultSettings = this.GetAzureStorageOrchestrationServiceSettings(options.StorageProvider.AzureStorage);
+                this.defaultSettings = this.GetAzureStorageOrchestrationServiceSettings(options);
                 this.defaultService = new AzureStorageOrchestrationService(this.defaultSettings);
             }
 
@@ -114,16 +112,17 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
             internal AzureStorageOrchestrationServiceSettings GetOrchestrationServiceSettings(OrchestrationClientAttribute attribute)
             {
                 return this.GetAzureStorageOrchestrationServiceSettings(
-                    this.options.StorageProvider.AzureStorage,
+                    this.options,
                     connectionNameOverride: attribute.ConnectionName,
                     taskHubNameOverride: attribute.TaskHub);
             }
 
             internal AzureStorageOrchestrationServiceSettings GetAzureStorageOrchestrationServiceSettings(
-                AzureStorageOptions azureStorageOptions,
+                DurableTaskOptions durableTaskOptions,
                 string connectionNameOverride = null,
                 string taskHubNameOverride = null)
             {
+                var azureStorageOptions = durableTaskOptions.StorageProvider.AzureStorage;
                 string connectionName = connectionNameOverride ?? azureStorageOptions.ConnectionStringName ?? ConnectionStringNames.Storage;
                 string resolvedStorageConnectionString = this.connectionStringResolver.Resolve(connectionName);
 
@@ -138,7 +137,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
                 var settings = new AzureStorageOrchestrationServiceSettings
                 {
                     StorageConnectionString = resolvedStorageConnectionString,
-                    TaskHubName = taskHubNameOverride ?? azureStorageOptions.HubName,
+                    TaskHubName = taskHubNameOverride ?? durableTaskOptions.HubName,
                     PartitionCount = azureStorageOptions.PartitionCount,
                     ControlQueueBatchSize = azureStorageOptions.ControlQueueBatchSize,
                     ControlQueueVisibilityTimeout = azureStorageOptions.ControlQueueVisibilityTimeout,
@@ -162,119 +161,23 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
             }
         }
 
-        private class ServiceBusOrchestrationServiceFactory : IOrchestrationServiceFactory
+        private class EmulaterOrchestrationServiceFactory : IOrchestrationServiceFactory
         {
-            private readonly DurableTaskOptions options;
-            private readonly IConnectionStringResolver connectionStringResolver;
+            private readonly LocalOrchestrationService service;
 
-            public ServiceBusOrchestrationServiceFactory(
-                DurableTaskOptions options,
-                IConnectionStringResolver connectionStringResolver)
+            public EmulaterOrchestrationServiceFactory(DurableTaskOptions options)
             {
-                this.options = options;
-                this.connectionStringResolver = connectionStringResolver;
+                this.service = new LocalOrchestrationService();
             }
 
             public IOrchestrationServiceClient GetOrchestrationClient(OrchestrationClientAttribute attribute)
             {
-                string connectionStringName = attribute.ConnectionName;
-                if (connectionStringName == null)
-                {
-                    throw new InvalidOperationException("Cannot get ServiceBus orchestration service without a ServiceBus connection string");
-                }
-
-                string connectionString = this.connectionStringResolver.Resolve(connectionStringName);
-                if (connectionString == null)
-                {
-                    throw new InvalidOperationException($"The connection string name {connectionStringName} was not able to be resolved");
-                }
-
-                return (IOrchestrationServiceClient)this.GetOrchestrationService(connectionString, attribute.TaskHub);
+                return this.service;
             }
 
             public IOrchestrationService GetOrchestrationService()
             {
-                string connectionStringName = this.options.StorageProvider.ServiceBus.ConnectionStringName;
-                if (connectionStringName == null)
-                {
-                    throw new InvalidOperationException("Cannot get ServiceBus orchestration service without a ServiceBus connection string");
-                }
-
-                string connectionString = this.connectionStringResolver.Resolve(connectionStringName);
-                if (connectionString == null)
-                {
-                    throw new InvalidOperationException($"The connection string name {connectionStringName} was not able to be resolved");
-                }
-
-                return this.GetOrchestrationService(connectionString, this.options.GetTaskHubName());
-            }
-
-            private IOrchestrationService GetOrchestrationService(string connectionString, string taskHubName)
-            {
-                var settings = GetOrchestrationServiceSettings(this.options.StorageProvider.ServiceBus);
-                var instanceStore = this.GetOrchestrationServiceInstanceStore(taskHubName);
-                var blobStore = this.GetOrchestrationServiceBlobStore(taskHubName);
-                return new ServiceBusOrchestrationService(connectionString, this.options.GetTaskHubName(), instanceStore, blobStore, settings);
-            }
-
-            private IOrchestrationServiceInstanceStore GetOrchestrationServiceInstanceStore(string taskHubName)
-            {
-                string instanceTableConnectionStringName = this.options.StorageProvider.ServiceBus.InstanceTableConnectionStringName;
-                if (instanceTableConnectionStringName == null)
-                {
-                    throw new InvalidOperationException("Cannot get ServiceBus orchestration service without a instance table connection string");
-                }
-
-                string instanceTableConnectionString = this.connectionStringResolver.Resolve(instanceTableConnectionStringName);
-                if (instanceTableConnectionString == null)
-                {
-                    throw new InvalidOperationException($"The connection string name {instanceTableConnectionString} was not able to be resolved");
-                }
-
-                return new AzureTableInstanceStore(taskHubName, instanceTableConnectionString);
-            }
-
-            private IOrchestrationServiceBlobStore GetOrchestrationServiceBlobStore(string taskHubName)
-            {
-                string blobConnectionStringName = this.options.StorageProvider.ServiceBus.BlobConnectionStringName;
-                if (blobConnectionStringName == null)
-                {
-                    throw new InvalidOperationException("Cannot get ServiceBus orchestration service without a instance table connection string");
-                }
-
-                string blobConnectionString = this.connectionStringResolver.Resolve(blobConnectionStringName);
-                if (blobConnectionString == null)
-                {
-                    throw new InvalidOperationException($"The connection string name {blobConnectionStringName} was not able to be resolved");
-                }
-
-                return new AzureStorageBlobStore(taskHubName, blobConnectionString);
-            }
-
-            private static ServiceBusOrchestrationServiceSettings GetOrchestrationServiceSettings(ServiceBusOptions options)
-            {
-                ServiceBusOrchestrationServiceSettings settings = new ServiceBusOrchestrationServiceSettings();
-                if (options.MaxQueueSizeInMegabytes.HasValue)
-                {
-                    settings.MaxQueueSizeInMegabytes = options.MaxQueueSizeInMegabytes.Value;
-                }
-
-                if (options.MaxTaskActivityDeliveryCount.HasValue)
-                {
-                    settings.MaxTaskActivityDeliveryCount = options.MaxTaskActivityDeliveryCount.Value;
-                }
-
-                if (options.MaxTaskOrchestrationDeliveryCount.HasValue)
-                {
-                    settings.MaxTaskOrchestrationDeliveryCount = options.MaxTaskOrchestrationDeliveryCount.Value;
-                }
-
-                if (options.MaxTrackingDeliveryCount.HasValue)
-                {
-                    settings.MaxTrackingDeliveryCount = options.MaxTrackingDeliveryCount.Value;
-                }
-
-                return settings;
+                return this.service;
             }
         }
     }

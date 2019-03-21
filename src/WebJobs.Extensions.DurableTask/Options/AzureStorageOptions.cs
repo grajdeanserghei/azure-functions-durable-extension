@@ -78,23 +78,25 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Options
         /// <value>Maximum interval for polling control and work-item queues.</value>
         public TimeSpan MaxQueuePollingInterval { get; set; } = TimeSpan.FromSeconds(30);
 
-        internal override void Validate()
-        {
-            base.Validate();
 
+        internal override void ValidateHubName(string hubName)
+        {
             try
             {
-                NameValidator.ValidateBlobName(this.HubName);
-                NameValidator.ValidateContainerName(this.HubName.ToLowerInvariant());
-                NameValidator.ValidateTableName(this.HubName);
-                NameValidator.ValidateQueueName(this.HubName.ToLowerInvariant());
+                NameValidator.ValidateBlobName(hubName);
+                NameValidator.ValidateContainerName(hubName.ToLowerInvariant());
+                NameValidator.ValidateTableName(hubName);
+                NameValidator.ValidateQueueName(hubName.ToLowerInvariant());
             }
             catch (ArgumentException e)
             {
                 throw new ArgumentException(
-                    $"Task hub name '{this.HubName}' should contain only alphanumeric characters excluding '-' and have length up to 50.", e);
+                    $"Task hub name '{hubName}' should contain only alphanumeric characters excluding '-' and have length up to 50.", e);
             }
+        }
 
+        internal override void Validate()
+        {
             if (this.ControlQueueBatchSize <= 0)
             {
                 throw new InvalidOperationException($"{nameof(this.ControlQueueBatchSize)} must be a non-negative integer.");

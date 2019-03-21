@@ -14,6 +14,18 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
     /// </summary>
     public class DurableTaskOptions
     {
+        /// <summary>
+        /// Gets or sets default task hub name to be used by all <see cref="DurableOrchestrationClient"/>,
+        /// <see cref="DurableOrchestrationContext"/>, and <see cref="DurableActivityContext"/> instances.
+        /// </summary>
+        /// <remarks>
+        /// A task hub is a logical grouping of storage resources. Alternate task hub names can be used to isolate
+        /// multiple Durable Functions applications from each other, even if they are using the same storage backend.
+        /// </remarks>
+        /// <value>The name of the default task hub.</value>
+        /// TODO: move this back into DurableTaskOptions.cs
+        public string HubName { get; set; }
+
         public StorageProviderOptions StorageProvider { get; set; }
 
         /// <summary>
@@ -185,13 +197,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
                 string url = this.NotificationUrl.GetLeftPart(UriPartial.Path);
                 sb.Append(nameof(this.NotificationUrl)).Append(": ").Append(url).Append(", ");
             }
+
             sb.Append(nameof(this.LogReplayEvents)).Append(": ").Append(this.LogReplayEvents);
             return sb.ToString();
-        }
-
-        public string GetTaskHubName()
-        {
-            return this.StorageProvider.GetConfiguredProvider().HubName;
         }
 
         public string GetConnectionStringName()
@@ -202,6 +210,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
         internal void Validate()
         {
             this.StorageProvider.Validate();
+            this.StorageProvider.GetConfiguredProvider().ValidateHubName(this.HubName);
 
             if (this.EventGridPublishRetryInterval <= TimeSpan.Zero ||
                 this.EventGridPublishRetryInterval > TimeSpan.FromMinutes(60))

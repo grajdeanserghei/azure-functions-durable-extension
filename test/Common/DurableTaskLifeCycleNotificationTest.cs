@@ -86,6 +86,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 testName,
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: httpMessageHandler))
@@ -172,6 +173,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 testName,
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: httpMessageHandler))
@@ -259,6 +261,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 testName,
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: httpMessageHandler))
@@ -332,6 +335,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 testName,
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: httpMessageHandler,
@@ -390,6 +394,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 testName,
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: httpMessageHandler,
@@ -448,6 +453,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 testName,
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: httpMessageHandler,
@@ -509,6 +515,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 testName,
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: httpMessageHandler,
@@ -589,6 +596,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 testName,
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: httpMessageHandler))
@@ -647,6 +655,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                         nameof(this.OrchestrationTerminate),
                         false /* extendedSessionsEnabled */,
                         eventGridKeySettingName,
+                        TestHelpers.AzureStorageProviderType,
                         mockNameResolver.Object,
                         eventGridEndpoint))
                     {
@@ -674,6 +683,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                         nameof(this.OrchestrationTerminate),
                         false /* extendedSessionsEnabled */,
                         eventGridKeySettingName,
+                        TestHelpers.AzureStorageProviderType,
                         mockNameResolver.Object,
                         eventGridEndpoint))
                     {
@@ -702,6 +712,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                         nameof(this.OrchestrationTerminate),
                         false /* extendedSessionsEnabled */,
                         eventGridKeySettingName,
+                        TestHelpers.AzureStorageProviderType,
                         mockNameResolver.Object,
                         eventGridEndpoint,
                         eventGridPublishEventTypes: new[] { "sstarted" }))
@@ -731,6 +742,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                         nameof(this.OrchestrationTerminate),
                         false /* extendedSessionsEnabled */,
                         eventGridKeySettingName,
+                        TestHelpers.AzureStorageProviderType,
                         mockNameResolver.Object,
                         eventGridEndpoint,
                         eventGridPublishEventTypes: new[] { "Pending" }))
@@ -862,6 +874,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 nameof(this.OrchestrationStartAndCompleted),
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: notificationHandler))
@@ -941,6 +954,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 nameof(this.OrchestrationStartAndCompleted),
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: notificationHandler))
@@ -1011,6 +1025,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 nameof(this.OrchestrationStartAndCompleted),
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: notificationHandler))
@@ -1081,6 +1096,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 nameof(this.OrchestrationStartAndCompleted),
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: notificationHandler))
@@ -1175,6 +1191,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 nameof(this.OrchestrationStartAndCompleted),
                 extendedSessionsEnabled,
                 eventGridKeySettingName,
+                TestHelpers.AzureStorageProviderType,
                 mockNameResolver.Object,
                 eventGridEndpoint,
                 eventGridNotificationHandler: notificationHandler))

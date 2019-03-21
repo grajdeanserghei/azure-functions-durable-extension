@@ -348,22 +348,6 @@
             </summary>
             <value>Maximum interval for polling control and work-item queues.</value>
         </member>
-        <member name="F:Microsoft.Azure.WebJobs.Extensions.DurableTask.Options.CommonStorageProviderOptions.DefaultHubName">
-            <summary>
-            The default task hub name to use when not explicitly configured.
-            </summary>
-        </member>
-        <member name="P:Microsoft.Azure.WebJobs.Extensions.DurableTask.Options.CommonStorageProviderOptions.HubName">
-            <summary>
-            Gets or sets default task hub name to be used by all <see cref="T:Microsoft.Azure.WebJobs.DurableOrchestrationClient"/>,
-            <see cref="T:Microsoft.Azure.WebJobs.DurableOrchestrationContext"/>, and <see cref="T:Microsoft.Azure.WebJobs.DurableActivityContext"/> instances.
-            </summary>
-            <remarks>
-            A task hub is a logical grouping of storage resources. Alternate task hub names can be used to isolate
-            multiple Durable Functions applications from each other, even if they are using the same storage backend.
-            </remarks>
-            <value>The name of the default task hub.</value>
-        </member>
         <member name="P:Microsoft.Azure.WebJobs.Extensions.DurableTask.Options.CommonStorageProviderOptions.ConnectionStringName">
             <summary>
             Gets or sets the name of the Azure Storage connection string used to manage the underlying Azure Storage resources.
@@ -377,6 +361,18 @@
             <summary>
             Configuration options for the Durable Task extension.
             </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.DurableTask.DurableTaskOptions.HubName">
+            <summary>
+            Gets or sets default task hub name to be used by all <see cref="T:Microsoft.Azure.WebJobs.DurableOrchestrationClient"/>,
+            <see cref="T:Microsoft.Azure.WebJobs.DurableOrchestrationContext"/>, and <see cref="T:Microsoft.Azure.WebJobs.DurableActivityContext"/> instances.
+            </summary>
+            <remarks>
+            A task hub is a logical grouping of storage resources. Alternate task hub names can be used to isolate
+            multiple Durable Functions applications from each other, even if they are using the same storage backend.
+            </remarks>
+            <value>The name of the default task hub.</value>
+            TODO: move this back into DurableTaskOptions.cs
         </member>
         <member name="P:Microsoft.Azure.WebJobs.Extensions.DurableTask.DurableTaskOptions.MaxConcurrentActivityFunctions">
             <summary>
@@ -1661,7 +1657,7 @@
             </summary>
             <value>The task hub used by this binding.</value>
             <remarks>
-            The default behavior is to use the task hub name specified in <see cref="!:DurableTaskOptions.HubName"/>.
+            The default behavior is to use the task hub name specified in <see cref="P:Microsoft.Azure.WebJobs.Extensions.DurableTask.DurableTaskOptions.HubName"/>.
             If no value exists there, then a default value will be used.
             </remarks>
         </member>

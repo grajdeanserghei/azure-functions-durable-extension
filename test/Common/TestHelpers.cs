@@ -18,12 +18,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 {
     internal static class TestHelpers
     {
+        public const string AzureStorageProviderType = "azure_storage";
+        public const string EmulatorProviderType = "emulator";
         public const string LogCategory = "Host.Triggers.DurableTask";
 
         public static JobHost GetJobHost(
             ILoggerProvider loggerProvider,
             string testName,
             bool enableExtendedSessions,
+            string storageProviderType = AzureStorageProviderType,
             string eventGridKeySettingName = null,
             INameResolver nameResolver = null,
             string eventGridTopicEndpoint = null,
@@ -38,13 +41,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         {
             var durableTaskOptions = new DurableTaskOptions
             {
-                StorageProvider = new StorageProviderOptions
-                {
-                    AzureStorage = new AzureStorageOptions
-                    {
-                        HubName = GetTaskHubNameFromTestName(testName, enableExtendedSessions),
-                    },
-                },
+                StorageProvider = new StorageProviderOptions(),
+                HubName = GetTaskHubNameFromTestName(testName, enableExtendedSessions),
                 TraceInputsAndOutputs = true,
                 EventGridKeySettingName = eventGridKeySettingName,
                 EventGridTopicEndpoint = eventGridTopicEndpoint,
@@ -56,6 +54,19 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 NotificationHandler = eventGridNotificationHandler,
                 EventGridPublishEventTypes = eventGridPublishEventTypes,
             };
+
+            if (string.Equals(storageProviderType, AzureStorageProviderType))
+            {
+                durableTaskOptions.StorageProvider.AzureStorage = new AzureStorageOptions();
+            }
+            else if (string.Equals(storageProviderType, EmulatorProviderType))
+            {
+                durableTaskOptions.StorageProvider.Emulator = new EmulatorStorageOptions();
+            }
+            else
+            {
+                throw new ArgumentException("Invalid storage provider type.", nameof(storageProviderType));
+            }
 
             if (eventGridRetryCount.HasValue)
             {

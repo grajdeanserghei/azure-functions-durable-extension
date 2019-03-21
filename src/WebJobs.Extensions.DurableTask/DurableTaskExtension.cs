@@ -54,23 +54,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
         private TaskHubWorker taskHubWorker;
         private bool isTaskHubWorkerStarted;
 
-        static DurableTaskExtension()
-        {
-            AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-        }
-
-        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            return null;
-            //throw new NotImplementedException();
-        }
-
-        private static void CurrentDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs args)
-        {
-           // throw new NotImplementedException();
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DurableTaskExtension"/>.
         /// </summary>
@@ -115,10 +98,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
         {
             ConfigureLoaderHooks();
 
-            if (this.nameResolver.TryResolveWholeString(this.Options.StorageProvider.GetConfiguredProvider().HubName, out string taskHubName))
+            if (this.nameResolver.TryResolveWholeString(this.Options.HubName, out string taskHubName))
             {
                 // use the resolved task hub name
-                this.Options.StorageProvider.GetConfiguredProvider().HubName = taskHubName;
+                this.Options.HubName = taskHubName;
             }
 
             // Throw if any of the configured options are invalid
@@ -159,7 +142,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
         private void TraceConfigurationSettings()
         {
             this.TraceHelper.ExtensionInformationalEvent(
-                this.Options.StorageProvider.GetConfiguredProvider().HubName,
+                this.Options.HubName,
                 instanceId: string.Empty,
                 functionName: string.Empty,
                 message: $"Initializing extension with the following settings: {this.Options.GetDebugString()}",
@@ -243,7 +226,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
             {
                 string message = $"Activity function '{activityFunction}' does not exist.";
                 this.TraceHelper.ExtensionWarningEvent(
-                    this.Options.StorageProvider.GetConfiguredProvider().HubName,
+                    this.Options.HubName,
                     activityFunction.Name,
                     string.Empty /* TODO: Flow the instance id into this event */,
                     message);
@@ -277,7 +260,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
             {
                 string message = this.GetInvalidOrchestratorFunctionMessage(orchestratorFunction.Name);
                 this.TraceHelper.ExtensionWarningEvent(
-                    this.Options.StorageProvider.GetConfiguredProvider().HubName,
+                    this.Options.HubName,
                     orchestratorFunction.Name,
                     orchestrationRuntimeState.OrchestrationInstance.InstanceId,
                     message);
@@ -373,7 +356,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
             if (this.knownOrchestrators.TryAdd(orchestratorFunction, orchestratorInfo))
             {
                 this.TraceHelper.ExtensionInformationalEvent(
-                    this.Options.GetTaskHubName(),
+                    this.Options.HubName,
                     instanceId: string.Empty,
                     functionName: orchestratorFunction.Name,
                     message: $"Registered orchestrator function named {orchestratorFunction}.",
@@ -393,7 +376,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
                 existing.IsDeregistered = true;
 
                 this.TraceHelper.ExtensionInformationalEvent(
-                    this.Options.GetTaskHubName(),
+                    this.Options.HubName,
                     instanceId: string.Empty,
                     functionName: orchestratorFunction.Name,
                     message: $"Deregistered orchestrator function named {orchestratorFunction}.",
@@ -418,7 +401,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
             else
             {
                 this.TraceHelper.ExtensionInformationalEvent(
-                    this.Options.GetTaskHubName(),
+                    this.Options.HubName,
                     instanceId: string.Empty,
                     functionName: activityFunction.Name,
                     message: $"Registering activity function named {activityFunction}.",
@@ -437,7 +420,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
                 info.IsDeregistered = true;
 
                 this.TraceHelper.ExtensionInformationalEvent(
-                    this.Options.GetTaskHubName(),
+                    this.Options.HubName,
                     instanceId: string.Empty,
                     functionName: activityFunction.Name,
                     message: $"Deregistered activity function named {activityFunction}.",
@@ -498,7 +481,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
                     if (!this.isTaskHubWorkerStarted)
                     {
                         this.TraceHelper.ExtensionInformationalEvent(
-                            this.Options.StorageProvider.GetConfiguredProvider().HubName,
+                            this.Options.HubName,
                             instanceId: string.Empty,
                             functionName: string.Empty,
                             message: "Starting task hub worker",
@@ -529,7 +512,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
                     this.knownActivities.Values.Count(info => !info.IsDeregistered) == 0)
                 {
                     this.TraceHelper.ExtensionInformationalEvent(
-                        this.Options.StorageProvider.GetConfiguredProvider().HubName,
+                        this.Options.HubName,
                         instanceId: string.Empty,
                         functionName: string.Empty,
                         message: "Stopping task hub worker",

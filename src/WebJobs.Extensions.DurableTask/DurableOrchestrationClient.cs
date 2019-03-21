@@ -41,7 +41,7 @@ namespace Microsoft.Azure.WebJobs
 
             this.client = new TaskHubClient(serviceClient);
             this.traceHelper = config.TraceHelper;
-            this.hubName = attribute.TaskHub ?? config.Options.GetTaskHubName();
+            this.hubName = attribute.TaskHub ?? config.Options.HubName;
             this.attribute = attribute;
         }
 
@@ -186,6 +186,7 @@ namespace Microsoft.Azure.WebJobs
             {
                 throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
             }
+
             await service.RewindTaskOrchestrationAsync(instanceId, reason);
 
             this.traceHelper.FunctionRewound(this.hubName, state.Name, instanceId, reason);
@@ -196,13 +197,17 @@ namespace Microsoft.Azure.WebJobs
         {
             // TODO this cast is to avoid to adding methods to the core IOrchestrationService/Client interface in DurableTask.Core. Eventually we will need
             // a better way of handling this
-            var serviceClient = this.client.ServiceClient as AzureStorageOrchestrationService;
-            if (serviceClient == null)
+            IList<OrchestrationState> stateList;
+            if (this.client.ServiceClient is AzureStorageOrchestrationService serviceClient)
             {
-                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+                stateList = await serviceClient.GetOrchestrationStateAsync(instanceId, allExecutions: false, fetchInput: showInput);
             }
-
-            IList<OrchestrationState> stateList = await serviceClient.GetOrchestrationStateAsync(instanceId, allExecutions: false, fetchInput: showInput);
+            else
+            {
+                // TODO: Going to ignore the show input flag for now. Will probably want to log a warning or even through an error if 
+                // value does not match default behavior for IOrchestrationServiceClient
+                stateList = await this.client.ServiceClient.GetOrchestrationStateAsync(instanceId, allExecutions: false);
+            }
 
             OrchestrationState state = stateList?.FirstOrDefault();
             if (state == null || state.OrchestrationInstance == null)
@@ -221,7 +226,7 @@ namespace Microsoft.Azure.WebJobs
             var serviceClient = this.client.ServiceClient as AzureStorageOrchestrationService;
             if (serviceClient == null)
             {
-                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+                throw new NotSupportedException("Only the Azure Storage state provider is currently supported for the get all instances status feature.");
             }
 
             IList<OrchestrationState> states = await serviceClient.GetOrchestrationStateAsync(cancellationToken);
@@ -243,7 +248,7 @@ namespace Microsoft.Azure.WebJobs
             var serviceClient = this.client.ServiceClient as AzureStorageOrchestrationService;
             if (serviceClient == null)
             {
-                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+                throw new NotSupportedException("Only the Azure Storage state provider is currently supported for the get status within specified date feature");
             }
 
             IList<OrchestrationState> states = await serviceClient.GetOrchestrationStateAsync(createdTimeFrom, createdTimeTo, runtimeStatus.Select(x => (OrchestrationStatus)x), cancellationToken);
@@ -264,7 +269,7 @@ namespace Microsoft.Azure.WebJobs
             var serviceClient = this.client.ServiceClient as AzureStorageOrchestrationService;
             if (serviceClient == null)
             {
-                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+                throw new NotSupportedException("Only the Azure Storage state provider is currently supported for the purge instance history feature");
             }
 
             DurableTask.AzureStorage.PurgeHistoryResult purgeHistoryResult =
@@ -280,7 +285,7 @@ namespace Microsoft.Azure.WebJobs
             var serviceClient = this.client.ServiceClient as AzureStorageOrchestrationService;
             if (serviceClient == null)
             {
-                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+                throw new NotSupportedException("Only the Azure Storage state provider is currently supported for the purge instance history feature");
             }
 
             DurableTask.AzureStorage.PurgeHistoryResult purgeHistoryResult =
@@ -302,7 +307,7 @@ namespace Microsoft.Azure.WebJobs
             var serviceClient = this.client.ServiceClient as AzureStorageOrchestrationService;
             if (serviceClient == null)
             {
-                throw new NotSupportedException("Only Azure Storage state providers are currently supported for the rewind feature");
+                throw new NotSupportedException("Only the Azure Storage state provider is currently supported for the paginated orchestration status query.");
             }
 
             var statusContext = await serviceClient.GetOrchestrationStateAsync(createdTimeFrom, createdTimeTo, runtimeStatus.Select(x => (OrchestrationStatus)x), pageSize, continuationToken, cancellationToken);
