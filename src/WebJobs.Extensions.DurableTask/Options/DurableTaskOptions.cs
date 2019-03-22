@@ -178,7 +178,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
             var sb = new StringBuilder(4096);
             sb.AppendLine("Initializing extension with the following settings:");
             sb.Append(nameof(this.HubName)).Append(":").Append(this.HubName).Append(", ");
-            sb.Append(nameof(this.StorageProvider)).Append(": { ").Append(this.StorageProvider);
+
+            sb.Append(nameof(this.StorageProvider)).Append(": { ");
+            this.StorageProvider.AddToDebugString(sb);
+            sb.Append(" }, ");
+
             sb.Append(nameof(this.MaxConcurrentActivityFunctions)).Append(": ").Append(this.MaxConcurrentActivityFunctions).Append(", ");
             sb.Append(nameof(this.MaxConcurrentOrchestratorFunctions)).Append(": ").Append(this.MaxConcurrentOrchestratorFunctions).Append(", ");
             sb.Append(nameof(this.ExtendedSessionsEnabled)).Append(": ").Append(this.ExtendedSessionsEnabled).Append(", ");
