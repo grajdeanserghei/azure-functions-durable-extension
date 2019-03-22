@@ -1,10 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
 using System.Text;
 
 namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Options
 {
+    /// <summary>
+    /// Configuration options for the Emulator storage provider.
+    /// <remarks>
+    /// At this time, there is no configuration available for the Emulator storage provider.
+    /// </remarks>
+    /// </summary>
     public class EmulatorStorageOptions : CommonStorageProviderOptions
     {
+        internal override void Validate()
+        {
+        }
+
+        internal override void ValidateHubName(string hubName)
+        {
+        }
+
+        internal override void AddToDebugString(StringBuilder builder)
+        {
+        }
     }
 }

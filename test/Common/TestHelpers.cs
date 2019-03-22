@@ -26,7 +26,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             ILoggerProvider loggerProvider,
             string testName,
             bool enableExtendedSessions,
-            string storageProviderType = AzureStorageProviderType,
             string eventGridKeySettingName = null,
             INameResolver nameResolver = null,
             string eventGridTopicEndpoint = null,
@@ -37,7 +36,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             Uri notificationUrl = null,
             HttpMessageHandler eventGridNotificationHandler = null,
             TimeSpan? maxQueuePollingInterval = null,
-            string[] eventGridPublishEventTypes = null)
+            string[] eventGridPublishEventTypes = null,
+            string storageProviderType = AzureStorageProviderType)
         {
             var durableTaskOptions = new DurableTaskOptions
             {

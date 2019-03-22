@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using System;
 using DurableTask.AzureStorage;
 using DurableTask.Core;
-using DurableTask.Core.Tracking;
 using DurableTask.Emulator;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
 {
-    public class OrchestrationServiceFactory : IOrchestrationServiceFactory
+    internal class OrchestrationServiceFactory : IOrchestrationServiceFactory
     {
         private IOrchestrationServiceFactory innerFactory;
 

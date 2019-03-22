@@ -1,10 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using System;
 using System.Text;
 using Microsoft.WindowsAzure.Storage;
 
 namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Options
 {
+    /// <summary>
+    /// Configuration options for the Azure Storage storage provider.
+    /// </summary>
     public class AzureStorageOptions : CommonStorageProviderOptions
     {
         /// <summary>
@@ -47,12 +52,12 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Options
         public TimeSpan WorkItemQueueVisibilityTimeout { get; set; } = TimeSpan.FromMinutes(5);
 
         /// <summary>
-        /// Gets or sets the name of the Azure Storage connection string to use for the 
+        /// Gets or sets the name of the Azure Storage connection string to use for the
         /// durable tracking store (History and Instances tables).
         /// </summary>
         /// <remarks><para>
-        /// If not specified, the <see cref="ConnectionStringName"/> connection string is used
-        /// for the durable tracking store.
+        /// If not specified, the <see cref="CommonStorageProviderOptions.ConnectionStringName"/> connection string
+        /// is used for the durable tracking store.
         /// </para><para>
         /// This property is primarily useful when deploying multiple apps that need to share the same
         /// tracking infrastructure. For example, when deploying two versions of an app side by side, using
@@ -77,7 +82,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Options
         /// </summary>
         /// <value>Maximum interval for polling control and work-item queues.</value>
         public TimeSpan MaxQueuePollingInterval { get; set; } = TimeSpan.FromSeconds(30);
-
 
         internal override void ValidateHubName(string hubName)
         {
@@ -117,6 +121,22 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Options
             {
                 throw new InvalidOperationException($"{nameof(this.MaxQueuePollingInterval)} must be non-negative.");
             }
+        }
+
+        internal override void AddToDebugString(StringBuilder builder)
+        {
+            builder.Append(nameof(this.ConnectionStringName)).Append(": ").Append(this.ConnectionStringName).Append(", ");
+            builder.Append(nameof(this.PartitionCount)).Append(": ").Append(this.PartitionCount).Append(", ");
+            builder.Append(nameof(this.ControlQueueBatchSize)).Append(": ").Append(this.ControlQueueBatchSize).Append(", ");
+            builder.Append(nameof(this.ControlQueueVisibilityTimeout)).Append(": ").Append(this.ControlQueueVisibilityTimeout).Append(", ");
+            builder.Append(nameof(this.WorkItemQueueVisibilityTimeout)).Append(": ").Append(this.WorkItemQueueVisibilityTimeout).Append(", ");
+            builder.Append(nameof(this.TrackingStoreConnectionStringName)).Append(": ").Append(this.TrackingStoreConnectionStringName).Append(", ");
+            if (!string.IsNullOrEmpty(this.TrackingStoreConnectionStringName))
+            {
+                builder.Append(nameof(this.TrackingStoreNamePrefix)).Append(": ").Append(this.TrackingStoreNamePrefix).Append(", ");
+            }
+
+            builder.Append(nameof(this.MaxQueuePollingInterval)).Append(": ").Append(this.MaxQueuePollingInterval).Append(", ");
         }
     }
 }

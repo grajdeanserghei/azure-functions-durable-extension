@@ -204,7 +204,7 @@ namespace Microsoft.Azure.WebJobs
             }
             else
             {
-                // TODO: Going to ignore the show input flag for now. Will probably want to log a warning or even through an error if 
+                // TODO: Going to ignore the show input flag for now. Will probably want to log a warning or even through an error if
                 // value does not match default behavior for IOrchestrationServiceClient
                 stateList = await this.client.ServiceClient.GetOrchestrationStateAsync(instanceId, allExecutions: false);
             }

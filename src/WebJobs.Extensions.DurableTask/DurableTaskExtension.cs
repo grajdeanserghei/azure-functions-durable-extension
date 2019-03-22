@@ -48,8 +48,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
 
         private readonly AsyncLock taskHubLock = new AsyncLock();
 
-        private IOrchestrationServiceFactory orchestrationServiceFactory;
-        private INameResolver nameResolver;
+        private readonly IOrchestrationServiceFactory orchestrationServiceFactory;
+        private readonly INameResolver nameResolver;
         private IOrchestrationService orchestrationService;
         private TaskHubWorker taskHubWorker;
         private bool isTaskHubWorkerStarted;
@@ -60,6 +60,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
         /// <param name="options">The configuration options for this extension.</param>
         /// <param name="loggerFactory">The logger factory used for extension-specific logging and orchestration tracking.</param>
         /// <param name="nameResolver">The name resolver to use for looking up application settings.</param>
+        /// <param name="orchestrationServiceFactory">The factory used to create orchestration service based on the configured storage provider.</param>
         public DurableTaskExtension(
             IOptions<DurableTaskOptions> options,
             ILoggerFactory loggerFactory,
@@ -339,7 +340,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
                 attribute,
                 attr =>
                 {
-                    var innerClient = this.orchestrationServiceFactory.GetOrchestrationClient(attribute);
+                    IOrchestrationServiceClient innerClient = this.orchestrationServiceFactory.GetOrchestrationClient(attribute);
                     return new DurableOrchestrationClient(innerClient, this, attr);
                 });
 

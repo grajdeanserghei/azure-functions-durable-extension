@@ -5,7 +5,6 @@ using System;
 using System.Net.Http;
 using System.Text;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
-using Microsoft.WindowsAzure.Storage;
 
 namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
 {
@@ -23,9 +22,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
         /// multiple Durable Functions applications from each other, even if they are using the same storage backend.
         /// </remarks>
         /// <value>The name of the default task hub.</value>
-        /// TODO: move this back into DurableTaskOptions.cs
         public string HubName { get; set; }
 
+        /// <summary>
+        /// The section of configuration related to storage providers.
+        /// </summary>
         public StorageProviderOptions StorageProvider { get; set; }
 
         /// <summary>
@@ -176,6 +177,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
         {
             var sb = new StringBuilder(4096);
             sb.AppendLine("Initializing extension with the following settings:");
+            sb.Append(nameof(this.HubName)).Append(":").Append(this.HubName).Append(", ");
+            sb.Append(nameof(this.StorageProvider)).Append(": { ").Append(this.StorageProvider);
+            sb.Append(nameof(this.MaxConcurrentActivityFunctions)).Append(": ").Append(this.MaxConcurrentActivityFunctions).Append(", ");
+            sb.Append(nameof(this.MaxConcurrentOrchestratorFunctions)).Append(": ").Append(this.MaxConcurrentOrchestratorFunctions).Append(", ");
             sb.Append(nameof(this.ExtendedSessionsEnabled)).Append(": ").Append(this.ExtendedSessionsEnabled).Append(", ");
             if (this.ExtendedSessionsEnabled)
             {
@@ -202,6 +207,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
             return sb.ToString();
         }
 
+        /// <summary>
+        /// A helper method to help retrieve the connection string name for the configured storage provider.
+        /// </summary>
+        /// <returns>The connection string name for the configured storage provider.</returns>
         public string GetConnectionStringName()
         {
             return this.StorageProvider.GetConfiguredProvider().ConnectionStringName;
@@ -209,7 +218,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
 
         internal void Validate()
         {
+            if (string.IsNullOrEmpty(this.HubName))
+            {
+                throw new InvalidOperationException($"A non-empty {nameof(this.HubName)} configuration is required.");
+            }
+
             this.StorageProvider.Validate();
+
+            // Each storage provider may have its own limitations for task hub names due to provider naming restrictions
             this.StorageProvider.GetConfiguredProvider().ValidateHubName(this.HubName);
 
             if (this.EventGridPublishRetryInterval <= TimeSpan.Zero ||
