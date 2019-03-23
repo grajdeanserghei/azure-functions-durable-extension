@@ -634,7 +634,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Fact]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task ConfigurationWihtoutEventGridKeySettingName()
+        public async Task ConfigurationWithoutEventGridKeySettingName()
         {
             var eventGridKeySettingName = "";
             var eventGridEndpoint = "http://dymmy.com/";

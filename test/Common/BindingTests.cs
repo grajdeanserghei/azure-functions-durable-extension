@@ -29,9 +29,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
         [Trait("Category", PlatformSpecificHelpers.TestCategory + "_BVT")]
-        [InlineData(TestHelpers.AzureStorageProviderType)]
-        [InlineData(TestHelpers.EmulatorProviderType)]
-        public async Task ActivityTriggerAsJObject(string storageProviderType)
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        private async Task ActivityTriggerAsJObject(string storageProviderType)
         {
             using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.ActivityTriggerAsJObject), false, storageProviderType))
             {
@@ -57,8 +56,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(TestHelpers.AzureStorageProviderType)]
-        [InlineData(TestHelpers.EmulatorProviderType)]
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
         public async Task ActivityTriggerAsPOCO(string storageProviderType)
         {
             using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.ActivityTriggerAsPOCO), false, storageProviderType))
@@ -86,8 +84,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(TestHelpers.AzureStorageProviderType)]
-        [InlineData(TestHelpers.EmulatorProviderType)]
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
         public async Task ActivityTriggerAsNumber(string storageProviderType)
         {
             using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.ActivityTriggerAsNumber), false, storageProviderType))
@@ -113,8 +110,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(TestHelpers.AzureStorageProviderType)]
-        [InlineData(TestHelpers.EmulatorProviderType)]
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
         public async Task BindToBlobViaParameterName(string storageProviderType)
         {
             using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.BindToBlobViaParameterName), false, storageProviderType))
@@ -166,8 +162,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(TestHelpers.AzureStorageProviderType)]
-        [InlineData(TestHelpers.EmulatorProviderType)]
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
         public async Task BindToBlobViaPOCO(string storageProviderType)
         {
             using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.BindToBlobViaPOCO), false, storageProviderType))

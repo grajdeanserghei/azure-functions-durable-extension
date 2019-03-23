@@ -65,8 +65,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
         {
             private readonly DurableTaskOptions options;
             private readonly IConnectionStringResolver connectionStringResolver;
-            private readonly AzureStorageOrchestrationService defaultService;
             private readonly AzureStorageOrchestrationServiceSettings defaultSettings;
+            private AzureStorageOrchestrationService defaultService;
 
             public AzureStorageOrchestrationServiceFactory(
                 DurableTaskOptions options,
@@ -75,11 +75,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask
                 this.options = options;
                 this.connectionStringResolver = connectionStringResolver;
                 this.defaultSettings = this.GetAzureStorageOrchestrationServiceSettings(options);
-                this.defaultService = new AzureStorageOrchestrationService(this.defaultSettings);
             }
 
             public IOrchestrationService GetOrchestrationService()
             {
+                if (this.defaultService == null)
+                {
+                    this.defaultService = new AzureStorageOrchestrationService(this.defaultSettings);
+                }
+
                 return this.defaultService;
             }
 

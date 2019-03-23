@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -86,10 +87,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true, TestHelpers.AzureStorageProviderType)]
-        [InlineData(false, TestHelpers.AzureStorageProviderType)]
-        [InlineData(true, TestHelpers.EmulatorProviderType)]
-        [InlineData(false, TestHelpers.EmulatorProviderType)]
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
         public async Task HelloWorldOrchestration_Inline(bool extendedSessions, string storageProviderType)
         {
             string[] orchestratorFunctionNames =
@@ -131,9 +129,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// End-to-end test which validates task hub name configured via the <see cref="OrchestrationClientAttribute"/> when
         /// simple orchestrator function which that doesn't call any activity functions is executed.
         /// </summary>
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task HelloWorld_OrchestrationClientTaskHub()
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task HelloWorld_OrchestrationClientTaskHub(string storageProviderType)
         {
             string taskHubName = TestHelpers.GetTaskHubNameFromTestName(
                 nameof(this.HelloWorld_OrchestrationClientTaskHub),
@@ -148,7 +147,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 this.loggerProvider,
                 nameof(this.HelloWorld_OrchestrationClientTaskHub) + "_Unused",
                 enableExtendedSessions: false,
-                nameResolver: new SimpleNameResolver(appSettings)))
+                nameResolver: new SimpleNameResolver(appSettings),
+                storageProviderType: storageProviderType))
             using (var orchestrationHost = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.HelloWorld_OrchestrationClientTaskHub),
@@ -191,9 +191,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ParentInstnaceId_Not_Assigned_In_Orchestrator(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task ParentInstanceId_Not_Assigned_In_Orchestrator(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -203,7 +202,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.HelloWorldOrchestration_Inline),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -222,11 +222,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task HelloWorldOrchestration_Activity(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task HelloWorldOrchestration_Activity(bool extendedSessions, string storageProvider)
         {
-            await this.HelloWorldOrchestration_Activity_Main_Logic(extendedSessions);
+            await this.HelloWorldOrchestration_Activity_Main_Logic(extendedSessions, storageProvider);
         }
 
         /// <summary>
@@ -234,11 +233,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task HelloWorldOrchestration_Activity_Validate_Logs_For_Replay_Events(bool logReplayEvents)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task HelloWorldOrchestration_Activity_Validate_Logs_For_Replay_Events(bool logReplayEvents, string storageProvider)
         {
-            await this.HelloWorldOrchestration_Activity_Main_Logic(false, logReplayEvents: logReplayEvents);
+            await this.HelloWorldOrchestration_Activity_Main_Logic(false, storageProvider, logReplayEvents: logReplayEvents);
         }
 
         /// <summary>
@@ -246,11 +244,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task HelloWorldOrchestration_Activity_History(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task HelloWorldOrchestration_Activity_History(bool extendedSessions, string storageProvider)
         {
-            await this.HelloWorldOrchestration_Activity_Main_Logic(extendedSessions, true);
+            await this.HelloWorldOrchestration_Activity_Main_Logic(extendedSessions, storageProvider, showHistory: true);
         }
 
         /// <summary>
@@ -258,11 +255,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task HelloWorldOrchestration_Activity_HistoryInputOutput(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task HelloWorldOrchestration_Activity_HistoryInputOutput(bool extendedSessions, string storageProvider)
         {
-            await this.HelloWorldOrchestration_Activity_Main_Logic(extendedSessions, true, true);
+            await this.HelloWorldOrchestration_Activity_Main_Logic(extendedSessions, storageProvider, showHistory: true, showHistoryOutput: true);
         }
 
         /// <summary>
@@ -270,9 +266,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task HelloWorldActivityWithNewGUID(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task HelloWorldActivityWithNewGUID(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -282,7 +277,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.HelloWorldActivityWithNewGUID),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -303,9 +299,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task VerifyUniqueGuids(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task VerifyUniqueGuids(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -315,7 +310,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.VerifyUniqueGuids),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -335,9 +331,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task VerifySameGuidsOnReplay(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task VerifySameGuidsOnReplay(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -347,7 +342,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.VerifySameGuidsOnReplay),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -362,7 +358,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             }
         }
 
-        private async Task HelloWorldOrchestration_Activity_Main_Logic(bool extendedSessions, bool showHistory = false, bool showHistoryOutput = false, bool logReplayEvents = true)
+        private async Task HelloWorldOrchestration_Activity_Main_Logic(bool extendedSessions, string storageProvider, bool showHistory = false, bool showHistoryOutput = false, bool logReplayEvents = true)
         {
             string[] orchestratorFunctionNames =
             {
@@ -375,7 +371,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 this.loggerProvider,
                 nameof(this.HelloWorldOrchestration_Activity),
                 extendedSessions,
-                logReplayEvents: logReplayEvents))
+                logReplayEvents: logReplayEvents,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -442,9 +439,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task HelloWorldOrchestration_Activity_CustomStatus(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task HelloWorldOrchestration_Activity_CustomStatus(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -456,7 +452,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.HelloWorldOrchestration_Activity_CustomStatus),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -496,15 +493,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task SequentialOrchestration(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task SequentialOrchestration(bool extendedSessions, string storageProvider)
         {
             string instanceId;
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.SequentialOrchestration),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -539,14 +536,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
         [Trait("Category", PlatformSpecificHelpers.TestCategory + "_BVT")]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ParallelOrchestration(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task ParallelOrchestration(bool extendedSessions, string storageProvider)
         {
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.ParallelOrchestration),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -566,15 +563,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory + "_BVT")]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ActorOrchestration(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task ActorOrchestration(bool extendedSessions, string storageProvider)
         {
             string instanceId;
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.ActorOrchestration),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -636,14 +633,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory + "_BVT")]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ActorOrchestration_NoWaiting(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task ActorOrchestration_NoWaiting(bool extendedSessions, string storageProvider)
         {
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.ActorOrchestration),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -673,14 +670,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task BatchedActorOrchestration(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task BatchedActorOrchestration(bool extendedSessions, string storageProvider)
         {
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.BatchedActorOrchestration),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -712,14 +709,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task BatchedActorOrchestrationDeleteLastItemAlways(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task BatchedActorOrchestrationDeleteLastItemAlways(bool extendedSessions, string storageProvider)
         {
             using (var host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.BatchedActorOrchestrationDeleteLastItemAlways),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -751,14 +748,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ParallelBatchedActorOrchestration(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task ParallelBatchedActorOrchestration(bool extendedSessions, string storageProvider)
         {
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.ParallelBatchedActorOrchestration),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
                 var client = await host.StartOrchestratorAsync(nameof(TestOrchestrations.ParallelBatchActor), null, this.output);
@@ -783,15 +780,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.FlakeyTestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ExternalEvents_MultipleNamesLooping(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task ExternalEvents_MultipleNamesLooping(bool extendedSessions, string storageProvider)
         {
             const string testName = nameof(this.ExternalEvents_MultipleNamesLooping);
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 testName,
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
                 var client = await host.StartOrchestratorAsync(nameof(TestOrchestrations.Counter2), null, this.output);
@@ -817,9 +814,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task TerminateOrchestration(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task TerminateOrchestration(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -829,7 +825,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.TerminateOrchestration),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -866,10 +863,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// <summary>
         /// End-to-end test which validates the Rewind functionality.
         /// </summary>
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
         [Trait("Category", PlatformSpecificHelpers.TestCategory + "_BVT")]
-        public async Task RewindOrchestration()
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task RewindOrchestration(string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -881,7 +879,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.RewindOrchestration),
-                enableExtendedSessions: false))
+                enableExtendedSessions: false,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -923,9 +922,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task TimerCancellation(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task TimerCancellation(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -935,7 +933,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.TimerCancellation),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -972,9 +971,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task TimerExpiration(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task TimerExpiration(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -984,7 +982,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.TimerExpiration),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1064,14 +1063,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task OrchestrationConcurrency(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task OrchestrationConcurrency(bool extendedSessions, string storageProvider)
         {
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.OrchestrationConcurrency),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1107,14 +1106,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task HandledActivityException(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task HandledActivityException(bool extendedSessions, string storageProvider)
         {
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.HandledActivityException),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1134,9 +1133,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task UnhandledOrchestrationException(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task UnhandledOrchestrationException(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -1146,7 +1144,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.UnhandledOrchestrationException),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1180,9 +1179,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task Orchestration_Activity(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task Orchestration_Activity(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -1195,7 +1193,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.Orchestration_Activity),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1226,31 +1225,34 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// <summary>
         /// End-to-end test which ensures sub-orchestrations can work with complex types for inputs and outputs.
         /// </summary>
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task SubOrchestration_ComplexType()
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task SubOrchestration_ComplexType(string storageProvider)
         {
-            await this.SubOrchestration_ComplexType_Main_Logic();
+            await this.SubOrchestration_ComplexType_Main_Logic(storageProvider);
         }
 
         /// <summary>
         /// End-to-end test which ensures sub-orchestrations can work with complex types for inputs and outputs and history information is provided.
         /// </summary>
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task SubOrchestration_ComplexType_History()
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task SubOrchestration_ComplexType_History(string storageProvider)
         {
-            await this.SubOrchestration_ComplexType_Main_Logic(true);
+            await this.SubOrchestration_ComplexType_Main_Logic(storageProvider, showHistory: true);
         }
 
         /// <summary>
         /// End-to-end test which ensures sub-orchestrations can work with complex types for inputs and outputs and history information with input and result data is provided.
         /// </summary>
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task SubOrchestration_ComplexType_HistoryInputOutput()
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task SubOrchestration_ComplexType_HistoryInputOutput(string storageProvider)
         {
-            await this.SubOrchestration_ComplexType_Main_Logic(true, true);
+            await this.SubOrchestration_ComplexType_Main_Logic(storageProvider, showHistory: true, showHistoryOutput: true);
         }
 
         /// <summary>
@@ -1258,12 +1260,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task SubOrchestration_Has_Valid_ParentInstanceId_Assigned(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task SubOrchestration_Has_Valid_ParentInstanceId_Assigned(bool extendedSessions, string storageProvider)
         {
             const string TaskHub = nameof(this.SubOrchestration_ComplexType);
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, TaskHub, extendedSessions))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, TaskHub, extendedSessions, storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1290,10 +1291,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             }
         }
 
-        private async Task SubOrchestration_ComplexType_Main_Logic(bool showHistory = false, bool showHistoryOutput = false)
+        private async Task SubOrchestration_ComplexType_Main_Logic(string storageProvider, bool showHistory = false, bool showHistoryOutput = false)
         {
             const string TaskHub = nameof(this.SubOrchestration_ComplexType);
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, TaskHub, enableExtendedSessions: false))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, TaskHub, enableExtendedSessions: false, storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1397,9 +1398,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task UnhandledOrchestrationExceptionWithRetry(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task UnhandledOrchestrationExceptionWithRetry(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -1409,7 +1409,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.UnhandledOrchestrationExceptionWithRetry),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1444,9 +1445,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// <summary>
         /// End-to-end test which validates the retries for an orchestrator function with null RetryOptions fails.
         /// </summary>
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task OrchestrationWithRetry_NullRetryOptions()
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task OrchestrationWithRetry_NullRetryOptions(string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -1456,7 +1458,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.OrchestrationWithRetry_NullRetryOptions),
-                enableExtendedSessions: false))
+                enableExtendedSessions: false,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1482,9 +1485,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
         [Trait("Category", PlatformSpecificHelpers.TestCategory + "_BVT")]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task UnhandledActivityException(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task UnhandledActivityException(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -1496,7 +1498,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.UnhandledActivityException),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1536,14 +1539,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task UnhandledSubOrchestratorActivityException(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task UnhandledSubOrchestratorActivityException(bool extendedSessions, string storageProvider)
         {
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.UnhandledSubOrchestratorActivityException),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1583,9 +1586,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task UnhandledActivityExceptionWithRetry(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task UnhandledActivityExceptionWithRetry(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -1597,7 +1599,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.UnhandledActivityExceptionWithRetry),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1632,14 +1635,16 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// <summary>
         /// End-to-end test which validates the retries for an activity function with null RetryOptions fails.
         /// </summary>
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task ActivityWithRetry_NullRetryOptions()
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task ActivityWithRetry_NullRetryOptions(string storageProvider)
         {
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.ActivityWithRetry_NullRetryOptions),
-                enableExtendedSessions: false))
+                enableExtendedSessions: false,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1664,14 +1669,16 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// End-to-end test which validates that waiting for an external event and calling
         /// an activity multiple times in a row does not lead to dropped events.
         /// </summary>
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task WaitForEventAndCallActivity_DroppedEventsTest()
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task WaitForEventAndCallActivity_DroppedEventsTest(string storageProvider)
         {
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.WaitForEventAndCallActivity_DroppedEventsTest),
-                enableExtendedSessions: false))
+                enableExtendedSessions: false,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1700,9 +1707,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task StartOrchestration_OnUnregisteredOrchestrator(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task StartOrchestration_OnUnregisteredOrchestrator(bool extendedSessions, string storageProvider)
         {
             const string activityFunctionName = "UnregisteredOrchestrator";
             string errorMessage = $"The function '{activityFunctionName}' doesn't exist, is disabled, or is not an orchestrator function";
@@ -1710,7 +1716,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.StartOrchestration_OnUnregisteredOrchestrator),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1728,9 +1735,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task Orchestration_OnUnregisteredActivity(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task Orchestration_OnUnregisteredActivity(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -1743,7 +1749,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.Orchestration_OnUnregisteredActivity),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1779,9 +1786,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task Orchestration_OnValidOrchestrator(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task Orchestration_OnValidOrchestrator(bool extendedSessions, string storageProvider)
         {
             const string greetingName = "ValidOrchestrator";
             const string validOrchestratorName = "SayHelloWithActivity";
@@ -1798,7 +1804,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.Orchestration_OnValidOrchestrator),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1840,14 +1847,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ThrowExceptionOnLongTimer(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task ThrowExceptionOnLongTimer(bool extendedSessions, string storageProvider)
         {
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.Orchestration_OnValidOrchestrator),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1870,9 +1877,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task Orchestration_OnUnregisteredOrchestrator(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task Orchestration_OnUnregisteredOrchestrator(bool extendedSessions, string storageProvider)
         {
             const string unregisteredOrchestrator = "UnregisteredOrchestrator";
             string[] orchestratorFunctionNames =
@@ -1886,7 +1892,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.Orchestration_OnUnregisteredActivity),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1919,12 +1926,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task BigReturnValue_Orchestrator(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task BigReturnValue_Orchestrator(bool extendedSessions, string storageProvider)
         {
             string taskHub = nameof(this.BigReturnValue_Orchestrator);
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, taskHub, extendedSessions))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, taskHub, extendedSessions, storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1948,12 +1954,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
         [Trait("Category", PlatformSpecificHelpers.TestCategory + "_BVT")]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task BigReturnValue_Activity(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task BigReturnValue_Activity(bool extendedSessions, string storageProvider)
         {
             string taskHub = nameof(this.BigReturnValue_Activity);
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, taskHub, extendedSessions))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, taskHub, extendedSessions, storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -1981,12 +1986,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task RaiseEventToSubOrchestration(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task RaiseEventToSubOrchestration(bool extendedSessions, string storageProvider)
         {
             string taskHub = nameof(this.RaiseEventToSubOrchestration);
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, taskHub, extendedSessions))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, taskHub, extendedSessions, storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -2019,15 +2023,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.FlakeyTestCategory)]
         [Trait("Category", PlatformSpecificHelpers.TestCategory + "_BVT")]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task SetStatusOrchestration(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task SetStatusOrchestration(bool extendedSessions, string storageProvider)
         {
             const string testName = nameof(this.SetStatusOrchestration);
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 testName,
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -2058,11 +2062,12 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             }
         }
 
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task GetStatus_InstanceNotFound()
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task GetStatus_InstanceNotFound(string storageProvider)
         {
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.GetStatus_InstanceNotFound), false))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.GetStatus_InstanceNotFound), false, storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -2077,12 +2082,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             }
         }
 
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task GetStatus_ShowInputFalse()
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task GetStatus_ShowInputFalse(string storageProvider)
         {
             const string testName = nameof(this.GetStatus_ShowInputFalse);
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, testName, false))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, testName, false, storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -2093,12 +2099,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             }
         }
 
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task GetStatus_ShowInputDefault()
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task GetStatus_ShowInputDefault(string storageProvider)
         {
             const string testName = nameof(this.GetStatus_ShowInputDefault);
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, testName, false))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, testName, false, storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -2109,11 +2116,12 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
             }
         }
 
-        [Fact]
+        [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        public async Task Deserialize_DurableOrchestrationStatus()
+        [MemberData(nameof(TestDataGenerator.GetStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task Deserialize_DurableOrchestrationStatus(string storageProvider)
         {
-            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.Deserialize_DurableOrchestrationStatus), false))
+            using (JobHost host = TestHelpers.GetJobHost(this.loggerProvider, nameof(this.Deserialize_DurableOrchestrationStatus), false, storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -2138,9 +2146,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task Activity_Gets_HttpManagementPayload(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task Activity_Gets_HttpManagementPayload(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -2152,7 +2159,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 this.loggerProvider,
                 nameof(this.Activity_Gets_HttpManagementPayload),
                 extendedSessions,
-                notificationUrl: new Uri(TestConstants.NotificationUrl)))
+                notificationUrl: new Uri(TestConstants.NotificationUrl),
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -2172,8 +2180,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         /// </summary>
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        public async Task OrchestrationClient_Gets_HttpManagementPayload(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task OrchestrationClient_Gets_HttpManagementPayload(bool extendedSessions, string storageProvider)
         {
             string[] orchestratorFunctionNames =
             {
@@ -2184,7 +2192,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 this.loggerProvider,
                 nameof(this.OrchestrationClient_Gets_HttpManagementPayload),
                 extendedSessions,
-                notificationUrl: new Uri(TestConstants.NotificationUrl)))
+                notificationUrl: new Uri(TestConstants.NotificationUrl),
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -2215,14 +2224,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.FlakeyTestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ActorOrchestration_WithTaskHubName(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task ActorOrchestration_WithTaskHubName(bool extendedSessions, string storageProvider)
         {
             var taskHubName1 = "ActorOrchestration1";
             var taskHubName2 = "ActorOrchestration2";
-            using (JobHost host1 = TestHelpers.GetJobHost(this.loggerProvider, taskHubName1, extendedSessions))
-            using (JobHost host2 = TestHelpers.GetJobHost(this.loggerProvider, taskHubName2, extendedSessions))
+            using (JobHost host1 = TestHelpers.GetJobHost(this.loggerProvider, taskHubName1, extendedSessions, storageProviderType: storageProvider))
+            using (JobHost host2 = TestHelpers.GetJobHost(this.loggerProvider, taskHubName2, extendedSessions, storageProviderType: storageProvider))
             {
                 await host1.StartAsync();
                 await host2.StartAsync();
@@ -2271,14 +2279,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.FlakeyTestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ExternalEvents_WithTaskHubName_MultipleNamesLooping(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task ExternalEvents_WithTaskHubName_MultipleNamesLooping(bool extendedSessions, string storageProvider)
         {
             var taskHubName1 = "MultipleNamesLooping1";
             var taskHubName2 = "MultipleNamesLooping2";
-            using (JobHost host1 = TestHelpers.GetJobHost(this.loggerProvider, taskHubName1, extendedSessions))
-            using (JobHost host2 = TestHelpers.GetJobHost(this.loggerProvider, taskHubName2, extendedSessions))
+            using (JobHost host1 = TestHelpers.GetJobHost(this.loggerProvider, taskHubName1, extendedSessions, storageProviderType: storageProvider))
+            using (JobHost host2 = TestHelpers.GetJobHost(this.loggerProvider, taskHubName2, extendedSessions, storageProviderType: storageProvider))
             {
                 await host1.StartAsync();
                 await host2.StartAsync();
@@ -2305,14 +2312,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task Purge_Single_Instance_History(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task Purge_Single_Instance_History(bool extendedSessions, string storageProvider)
         {
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.Purge_Single_Instance_History),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -2344,15 +2351,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task Purge_All_History_By_TimePeriod(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task Purge_All_History_By_TimePeriod(bool extendedSessions, string storageProvider)
         {
             string testName = nameof(this.Purge_Partially_History_By_TimePeriod);
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 testName,
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
@@ -2429,14 +2436,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
 
         [Theory]
         [Trait("Category", PlatformSpecificHelpers.TestCategory)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task Purge_Partially_History_By_TimePeriod(bool extendedSessions)
+        [MemberData(nameof(TestDataGenerator.GetExtendedSessionAndStorageProviderOptions), MemberType = typeof(TestDataGenerator))]
+        public async Task Purge_Partially_History_By_TimePeriod(bool extendedSessions, string storageProvider)
         {
             using (JobHost host = TestHelpers.GetJobHost(
                 this.loggerProvider,
                 nameof(this.Purge_Partially_History_By_TimePeriod),
-                extendedSessions))
+                extendedSessions,
+                storageProviderType: storageProvider))
             {
                 await host.StartAsync();
 
